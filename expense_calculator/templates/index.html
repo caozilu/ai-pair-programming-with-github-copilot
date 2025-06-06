@@ -14,7 +14,20 @@
 
 <body>
   <div class="container">
-
+    <h1>Hello Expense Tracker</h1>
+    <!-- create inputs for name, amount -->
+    <input type="text" name="name" placeholder="name">
+    <input type="number" name="amount" placeholder="amount">
+    <!-- create a select for category -->
+    <!-- options (Food, Transport, Entertainment, Other) -->
+    <select name="category">
+      <option value="Food">Food</option>
+      <option value="Transport">Transport</option>
+      <option value="Entertainment">Entertainment</option>
+      <option value="Other">Other</option>
+    </select>
+    <!-- create a submit input -->
+    <input type="submit" value="Submit">
   </div>
   <script>
     const apiUri = '/api/expenses/';
@@ -22,10 +35,41 @@
       'Content-Type': 'application/json'
     };
     function renderExpense(expense) {
-      console.table(expense);
+      // console.table(expense);
+      // create tr with td for name, amount, and timestamp
+      // use template strings
+      const tr = document.createElement('tr');
+      // make the timestamp human readable
+      const timestamp = new Date(expense.timestamp);
+      const timestampString = timestamp
+        .toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric'
+        });
+      tr.innerHTML = `
+        <td>${expense.name}</td>
+        <td>${expense.amount}</td>
+        <td>${timestampString}</td>
+      `;
+      // add a td with a delete button 'x'
+      // bind the deleteExpense function to the button
+      const td = document.createElement('td');
+      const button = document.createElement('button');
+      button.innerText = 'x';
+      button.addEventListener('click', () => {
+        deleteExpense(expense.pk);
+      });
+      td.appendChild(button);
+      tr.appendChild(td);
+      // add the tr to the table
+      table.appendChild(tr);
     }
     function refreshTable() {
-
+      table.innerHTML = '';
+      getExpenses()
     }
     function getExpenses() {
       fetch(apiUri, {
@@ -35,18 +79,26 @@
         .then(response => response.json())
         .then(data => {
           console.table(data);
-          data.forEach(expense => renderExpense(expense));
+          data.forEach(renderExpense);
         })
         .catch(error => console.error('Error fetching expenses:', error));
 
     }
     function postExpense() {
-      // name, amount, category(food, transport, entertainment, etc.), other
+      // name, amount, category(Food, Transport, Entertainment, etc.), other
+      // const expense = {
+      //   name: 'New Expense',
+      //   amount: 100,
+      //   category: 'Food',
+      //   other: 'Some other info'
+      // };
+      const name = document.querySelector('input[name="name"]').value;
+      const amount = document.querySelector('input[name="amount"]').value;
+      const category = document.querySelector('select[name="category"]').value;
       const expense = {
-        name: 'New Expense',
-        amount: 100,
-        category: 'food',
-        other: 'Some other info'
+        name: name,
+        amount: amount,
+        category: category
       };
       fetch(apiUri, {
         method: 'POST',
@@ -55,20 +107,22 @@
       })
         .then(response => response.json())
         .then(data => {
-          console.log('Expense posted:', data);
-          getExpenses();
+          // console.log('Expense posted:', data);
+          // getExpenses();
+          console.table(data);
+          renderExpense(data);
         })
         .catch(error => console.error('Error posting expense:', error));
     }
-    function deleteExpense(id) {
-      // api uri endpoint: /api/expenses/{id}
-      fetch(`${apiUri}${id}/`, {
+    function deleteExpense(pk) {
+      // api uri endpoint: /api/expenses/{pk}
+      fetch(`${apiUri}${pk}/`, {
         method: 'DELETE',
         headers: headers
       })
         .then(response => {
           if (response.ok) {
-            console.log('Expense deleted:', id);
+            console.log('Expense deleted:', pk);
             refreshTable();
           } else {
             console.error('Error deleting expense:', response.statusText);
@@ -76,14 +130,16 @@
         })
         .catch(error => console.error('Error deleting expense:', error));
     }
-    // const table = document.createElement('table');
+    const table = document.createElement('table');
+    const container = document.querySelector('.container');
+    container.appendChild(table);
     // document.body.appendChild(table);
-    // refreshTable();
-    // document.querySelector("input[type='submit']").addEventListener('click', postExpense);
-    
+    refreshTable();
+    document.querySelector("input[type='submit']").addEventListener('click', postExpense);
+
     // Example usage
     // deleteExpense(1);
-    getExpenses();
+    // getExpenses();
     // postExpense();
   </script>
 </body>

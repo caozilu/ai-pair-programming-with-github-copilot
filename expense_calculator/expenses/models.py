@@ -10,12 +10,12 @@ class Expense(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     # category choice field
     CATEGORY_CHOICES = [
-        ('food', 'Food'),
-        ('transport', 'Transport'),
-        ('entertainment', 'Entertainment'),
-        ('other', 'Other'),
+        ('Food', 'Food'),
+        ('Transport', 'Transport'),
+        ('Entertainment', 'Entertainment'),
+        ('Other', 'Other'),
     ]
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    category = models.CharField(max_length=100, choices=CATEGORY_CHOICES)
 
     def __str__(self):
         return f"{self.name} - {self.amount}"
